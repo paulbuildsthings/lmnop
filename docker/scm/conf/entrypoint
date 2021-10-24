@@ -1,0 +1,33 @@
+#!/bin/bash
+
+export APACHE_LOCK_DIR=/var/lock/apache2
+export APACHE_RUN_DIR=/var/run/apache2
+export APACHE_PID_FILE=/var/run/apache2/apache2.pid
+export APACHE_RUN_USER=lmnop
+export APACHE_RUN_GROUP=lmnop
+export APACHE_LOG_DIR=/var/log/apache2
+
+# these should be set by the caller but in case they are not
+export HTTPD_SERVER_NAME=${HTTPD_SERVER_NAME-localhost}
+export HTTPD_LOG_SERVER=${HTTPD_LOG_SERVER-localhost}
+export HTTPD_PROXY_PROTOCOL=${HTTPD_PROXY_PROTOCOL-Off}
+
+# these need to be passed to the cgi scripts
+export DOCKER_HOST=${DOCKER_HOST-tcp://localhost:2375}
+export LMNOP_DEPLOY_BRANCH=${LMNOP_DEPLOY_BRANCH-main}
+export LMNOP_HOME=${LMNOP_HOME-http://localhost:8080}
+export LMNOP_GATEWAY=${LMNOP_GATEWAY-http://localhost:8080}
+export LMNOP_REGISTRY=${LMNOP_REGISTRY-ghcr.io/github}
+export LMNOP_DATABASE_HOST=${LMNOP_DATABASE_HOST-localhost}
+export LMNOP_DATABASE_PORT=${LMNOP_DATABASE_PORT-5432}
+export LMNOP_DATABASE_NAME=${LMNOP_DATABASE_NAME-lmnop}
+export LMNOP_DATABASE_USERNAME=${LMNOP_DATABASE_USERNAME-lmnop}
+export LMNOP_DATABASE_PASSWORD=${LMNOP_DATABASE_PASSWORD-}
+
+# make the git directory and fix ownership
+mkdir -p /srv/data/git
+chown lmnop:lmnop /srv/data/git
+
+# make directories for apache and start apache
+mkdir -p /var/run/apache2
+exec /usr/sbin/apache2 -DFOREGROUND

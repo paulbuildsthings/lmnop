@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings FATAL => "all";
+
+use IPC::Open3 qw(open3);
+use File::Spec;
+
+# these come from the CGI handler
+my $prefix = $ENV{"CONTEXT_PREFIX"};
+my $path = $ENV{"REQUEST_URI"};
+my $root = $ENV{"GIT_PROJECT_ROOT"};
+
+# repo names must be between 1 and 63 characters in length
+# and they must contain only letters, numbers, hyphens and periods.
+if ($path =~ /^\Q$prefix\E([^\/][a-zA-Z0-9\-\.]{1,63}?)\//x) {
+    my $repo_name = $1;
+    my $repo_path = File::Spec->join($root, $repo_name);
+
+    # prepare to accept the repository
+    eval {
+        # we want to not tie stdin to the program and we also want to
+        # redirect stdout to stderr because stdout breaks the caller.
+        my $pid = open3(my $chld_in, ">&STDERR", ">&STDERR", "builder", "prepare", $root, $repo_name);
+        waitpid($pid, 0);
+        my $child_exit_status = $? >> 8;
+        die "builder returned ${child_exit_status}\n" if $child_exit_status;
+        1;
+    } or do {
+        chomp(my $error = $@);
+        die "unable to call builder for ${repo_path}: ${error}\n";
+    };
+
+    # add a custom pre-receive hook
+    my $hook_path = File::Spec->join($repo_path, "hooks", "pre-receive");
+    open(my $fh, ">", $hook_path) or die "could not open ${hook_path}: $!\n";
+    print $fh "#!/bin/bash\n";
+    print $fh "exec builder receive ${root} ${repo_name}\n";
+    close($fh);
+
+    # make the hook executable
+    chmod(0755, $hook_path);
+} else {
+    die "could not process ${path} for ${prefix}\n";
+}
+
+# now just run the external program like normal
+exec "/usr/lib/git-core/git-http-backend";

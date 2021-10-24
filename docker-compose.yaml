@@ -1,0 +1,62 @@
+version: "3.5"
+
+services:
+  scm:
+    build:
+      context: .
+      dockerfile: ./docker/scm/Dockerfile
+    image: ghcr.io/paullockaby/lmnop/scm
+    container_name: scm
+    networks:
+      - lmnop
+    ports:
+      - "8080:80/tcp"
+    volumes:
+      - "./data/docker-config.json:/home/lmnop/.docker/config.json"
+    environment:
+      - LMNOP_DEPLOY_BRANCH=main
+      - LMNOP_HOME=http://dev.infra.lockaby.org:8080
+      - LMNOP_GATEWAY=http://dev.infra.lockaby.org:8080
+      - LMNOP_REGISTRY=ghcr.io/plockaby
+      - LMNOP_DATABASE_HOST=db
+      - LMNOP_DATABASE_PORT=5432
+      - LMNOP_DATABASE_NAME=lmnop
+      - LMNOP_DATABASE_USERNAME=lmnop
+      - LMNOP_DATABASE_PASSWORD=lmnop
+      - DOCKER_HOST=tcp://dind:2375
+      - HTTPD_PROXY_PROTOCOL=Off
+      - HTTPD_LOG_SERVER=localhost
+      - HTTPD_SERVER_NAME=localhost
+  dind:
+    image: docker.io/library/docker:20.10.10-dind
+    command:
+      - dockerd
+      - --storage-driver=overlay2
+      - --host=tcp://0.0.0.0:2375
+      - --bip=10.60.3.1/24
+      - --tls=false
+    container_name: dind
+    privileged: true
+    networks:
+      - lmnop
+  postgres:
+    image: docker.io/library/postgres:13.4
+    container_name: db
+    networks:
+      - lmnop
+    ports:
+      - "5432:5432/tcp"
+    volumes:
+      - "./sql/schema:/docker-entrypoint-initdb.d"
+    environment:
+      - POSTGRES_USER=lmnop
+      - POSTGRES_PASSWORD=lmnop
+      - POSTGRES_DB=lmnop
+
+networks:
+  lmnop:
+    driver: bridge
+    name: intake
+    ipam:
+      config:
+        - subnet: 10.63.0.0/24

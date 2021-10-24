@@ -1,3 +1,7 @@
+# WARNING: if this file is different than .gitignore then when the container
+# tries to assign a version number for the project it will always think that
+# the project is dirty. ensure that these files look the same.
+
 # specific to this project
 data
 

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /home/app/function || exit
+exec gunicorn app:app

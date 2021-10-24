@@ -1,0 +1,37 @@
+# this must match a template name
+template: python3
+
+# requests are what the function is guaranteed to get. if a function requests a
+# resource then it will only run if it can be given that resource. these are
+# the defaults if nothing is specified by the configuration.
+requests:
+  cpu: 50m
+  memory: 32Mi
+
+# limits are what a function should never go above. a function just won't be
+# able to schedule more CPU than this. if the function uses more memory than
+# this it will be killed and restarted. these are the defaults if nothing is
+# specified by the configuration.
+limits:
+  cpu: 100m
+  memory: 64Mi
+
+# these are environment variables. they aren't necessary but can be useful. do
+# NOT put secret data into environment variables.
+environment:
+  foo: bar
+
+# these secrets must exist or the function will never start. secrets can be
+# created using the lmnop portal. they can be found in /var/openfaas/secrets
+# where you will see a file with the same name as the secret and the contents
+# of the file will be the actual secret data.
+secrets:
+  - aws-key
+
+# options are specific to templates. the most common "option" is a string that
+# contains a list of packages (i.e. libraries) to install. for example, you may
+# need to have "git" installed or "curl" installed or whatever because the
+# python libraries that you're using depend on these libraries in order to
+# correctly install themselves.
+options:
+  packages: curl
