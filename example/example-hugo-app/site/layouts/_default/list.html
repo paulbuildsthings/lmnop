@@ -1,0 +1,12 @@
+{{ define "main" }}
+  {{ if .Title }}<h2>{{ .Title }}</h2>{{ end }}
+  A page with a list of things on it.
+
+  <ol>
+    {{ range .Pages }}
+      <li>
+        <a href="{{.Permalink}}">{{.Date.Format "2006-01-02"}} | {{.Title}}</a>
+      </li>
+    {{ end }}
+  </ol>
+{{ end }}

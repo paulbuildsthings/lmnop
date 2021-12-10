@@ -1,0 +1,36 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: python:3.9-slim-bullseye
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: configure poetry
+        run: |
+          pip3 install poetry --no-cache-dir
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+
+      - name: build and test builder
+        working-directory: ./builder
+        run: |
+          poetry install --no-ansi --no-interaction
+          poetry run pytest
+
+      - name: build and test portal
+        working-directory: ./portal
+        run: |
+          poetry install --no-ansi --no-interaction
+          poetry run pytest

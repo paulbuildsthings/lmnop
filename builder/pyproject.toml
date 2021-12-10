@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "builder"
+version = "0.0.0"  # DO NOT CHANGE -- set during build
+description = "Build and deploy functions."
+authors = ["Paul Lockaby <paul@paullockaby.com>"]
+packages = [{include = "builder", from = "src"}]
+
+[tool.poetry.scripts]
+builder = "builder.__main__:main"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+PyYAML = "^6.0"
+schema = "^0.7.5"
+psycopg2-binary = "^2.9.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pytest-flake8 = "^1.0.7"
+flake8 = "^3.9.2"
+flake8-bandit = "^2.1.2"
+flake8-builtins = "^1.5.3"
+flake8-bugbear = "^21.11.29"
+flake8-comprehensions = "^3.7.0"
+flake8-isort = "^4.1.1"
+pep8-naming = "^0.12.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--flake8 -p no:warnings --log-level=ERROR"

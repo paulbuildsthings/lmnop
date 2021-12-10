@@ -1,0 +1,19 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {{ if .Params.author }}<meta name="author" content="{{ .Params.author }}" />{{ end }}
+  {{ if .Params.description }}<meta name="description" content="{{ .Params.description }}" /> {{ end }}
+
+  <title>{{ .Title }}</title>
+
+  {{ range .AlternativeOutputFormats -}}
+    <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink | relURL }}" title="{{ $.Site.Title }}">
+  {{ end -}}
+
+  <!-- My favorite icon -->
+  <link rel="shortcut icon" type="image/x-icon" href="{{ "favicon.ico" | relURL }}">
+
+  <!-- Internal CSS -->
+  <link rel="stylesheet" href="{{ "static/main.css" | relURL }}">
+</head>

@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: "docker"
+    directory: "/builder"
+    schedule:
+      interval: weekly
+  - package-ecosystem: "docker"
+    directory: "/portal"
+    schedule:
+      interval: weekly
+  - package-ecosystem: "docker"
+    directory: "/router"
+    schedule:
+      interval: weekly
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: monthly
+  - package-ecosystem: "docker"
+    directory: "/templates/python3.9"
+    schedule:
+      interval: weekly
+  - package-ecosystem: "docker"
+    directory: "/templates/python3.10"
+    schedule:
+      interval: weekly
+  - package-ecosystem: "docker"
+    directory: "/templates/hugo"
+    schedule:
+      interval: weekly

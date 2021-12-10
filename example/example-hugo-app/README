@@ -1,0 +1,18 @@
+You can use this template to deploy a static site using the Hugo static site
+build system. To deploy a Hugo-based static site:
+
+* The "function.yml" file is used to tell the build system about the your
+  app's configuration. It is required and must exist.
+* Your app must have a directory called "site". This directory should contain
+  a valid Hugo site and will be used to build the static site that is deployed.
+  This directory is required and must exist.
+
+To deploy this example to the demo, run these commands:
+
+    git init
+    git checkout -b main
+    git add .
+    git commit -m "initial commit"
+    git remote add lmnop http://localhost:8000/scm/example
+    git push lmnop main  # username: test, password: test
+

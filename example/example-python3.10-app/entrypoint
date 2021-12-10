@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /home/lmnop/function || exit
+exec gunicorn app:app -b 127.0.0.1:5000

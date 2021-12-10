@@ -1,62 +1,98 @@
 version: "3.5"
 
 services:
-  scm:
+  builder:
     build:
       context: .
-      dockerfile: ./docker/scm/Dockerfile
-    image: ghcr.io/paullockaby/lmnop/scm
-    container_name: scm
+      dockerfile: ./builder/Dockerfile
+    image: ghcr.io/paullockaby/lmnop/builder
+    container_name: builder
     networks:
       - lmnop
     ports:
-      - "8080:80/tcp"
-    volumes:
-      - "./data/docker-config.json:/home/lmnop/.docker/config.json"
+      - 8000:80/tcp
     environment:
       - LMNOP_DEPLOY_BRANCH=main
-      - LMNOP_HOME=http://dev.infra.lockaby.org:8080
-      - LMNOP_GATEWAY=http://dev.infra.lockaby.org:8080
-      - LMNOP_REGISTRY=ghcr.io/plockaby
+      - LMNOP_HOMEPAGE_URL=http://localhost:8000
+      - LMNOP_FUNCTION_URL=http://localhost:8000/function/{
+      - LMNOP_GATEWAY=http://host.docker.internal:30001
+      - LMNOP_REGISTRY=host.docker.internal:30002/lmnop
       - LMNOP_DATABASE_HOST=db
       - LMNOP_DATABASE_PORT=5432
       - LMNOP_DATABASE_NAME=lmnop
-      - LMNOP_DATABASE_USERNAME=lmnop
-      - LMNOP_DATABASE_PASSWORD=lmnop
+      - LMNOP_DATABASE_USERNAME=postgres
+      - LMNOP_DATABASE_PASSWORD=postgres
       - DOCKER_HOST=tcp://dind:2375
       - HTTPD_PROXY_PROTOCOL=Off
       - HTTPD_LOG_SERVER=localhost
-      - HTTPD_SERVER_NAME=localhost
+      - HTTPD_SERVER_NAME=localhost:8000
+  router:
+    build:
+      context: .
+      dockerfile: ./router/Dockerfile
+    image: ghcr.io/paullockaby/lmnop/router
+    container_name: router
+    networks:
+      - lmnop
+    ports:
+      - 3000:80/tcp
+    environment:
+      - LMNOP_GATEWAY=http://host.docker.internal:30001
+      - HTTPD_PROXY_PROTOCOL=Off
+      - HTTPD_LOG_SERVER=localhost
+      - HTTPD_SERVER_NAME=localhost:3000
+  portal:
+    build:
+      context: .
+      dockerfile: ./portal/Dockerfile
+    image: ghcr.io/paullockaby/lmnop/portal
+    entrypoint:
+      - /entrypoints/run
+      - --chdir=/home/lmnop/app/src
+      - --bind=0.0.0.0:8080
+      - --worker-class=gevent
+      - --log-config=configurations/logging.conf
+    container_name: portal
+    networks:
+      - lmnop
+    ports:
+      - 8080:8080/tcp
+    environment:
+      - LMNOP_HOMEPAGE_URL=http://localhost:8000
+      - LMNOP_FUNCTION_URL=http://localhost:8000/function/{}
+      - LMNOP_GATEWAY=http://host.docker.internal:30001
+      - LMNOP_DATABASE_HOST=db
+      - LMNOP_DATABASE_PORT=5432
+      - LMNOP_DATABASE_NAME=lmnop
+      - LMNOP_DATABASE_USERNAME=postgres
+      - LMNOP_DATABASE_PASSWORD=postgres
   dind:
     image: docker.io/library/docker:20.10.10-dind
     command:
       - dockerd
       - --storage-driver=overlay2
+      - --insecure-registry=host.docker.internal:30002
       - --host=tcp://0.0.0.0:2375
-      - --bip=10.60.3.1/24
       - --tls=false
     container_name: dind
     privileged: true
     networks:
       - lmnop
   postgres:
-    image: docker.io/library/postgres:13.4
+    image: docker.io/library/postgres:13
     container_name: db
     networks:
       - lmnop
     ports:
-      - "5432:5432/tcp"
+      - 5432:5432/tcp
     volumes:
-      - "./sql/schema:/docker-entrypoint-initdb.d"
+      - ./sql/schema:/docker-entrypoint-initdb.d
     environment:
-      - POSTGRES_USER=lmnop
-      - POSTGRES_PASSWORD=lmnop
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lmnop
 
 networks:
   lmnop:
     driver: bridge
-    name: intake
-    ipam:
-      config:
-        - subnet: 10.63.0.0/24
+    name: lmnop

@@ -1,0 +1,17 @@
+# this must match a template name. REQUIRED. (everything else is optional.)
+template: hugo
+
+# requests are what the function is guaranteed to get. if a function requests a
+# resource then it will only run if it can be given that resource. these are
+# the defaults if nothing is specified by the configuration.
+requests:
+  cpu: 50m
+  memory: 32Mi
+
+# limits are what a function should never go above. a function just won't be
+# able to schedule more CPU than this. if the function uses more memory than
+# this it will be killed and restarted. these are the defaults if nothing is
+# specified by the configuration.
+limits:
+  cpu: 100m
+  memory: 64Mi

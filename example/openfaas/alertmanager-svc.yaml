@@ -1,0 +1,18 @@
+---
+# Source: openfaas/templates/alertmanager-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: openfaas
+    component: alertmanager
+    release: openfaas
+  name: alertmanager
+  namespace: "openfaas"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9093
+      protocol: TCP
+  selector:
+    app: alertmanager

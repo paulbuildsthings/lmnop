@@ -1,7 +1,3 @@
-# specific to this project
-data
-
-# General exceptions
 .*.swp
 *~
 .DS_Store
@@ -29,7 +25,6 @@ lib/
 lib64/
 parts/
 sdist/
-var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/

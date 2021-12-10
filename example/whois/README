@@ -1,9 +1,0 @@
-Here's what happens:
-
-When the "faas up" command happens it takes the template based on the language name and then copies the actual app into a subdir in the template called "function" so if we want to get things from the user's function from within the Dockerfil we have to refer to it as "function/whatever.txt" (or whatever the filename is).
-
-For python applicaitons we're going to only copy "requirements.txt" out of the function root and then copy the entire "function" directory out of the function root. Then:
-
-* The requirements.txt file gets copied and installed. It must exist or the whole thing will faile.
-* The function must have a directory called "function". It will be copied to /home/app/function and the container will start from there, using WORKDIR.
-* You must set a build_arg called "fprocess" which will be used to set the process that will start when the container starts.

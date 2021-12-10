@@ -1,0 +1,9 @@
+baseURL = "http://localhost:30001/function/hugo"
+languageCode = "en-us"
+timeZone = "America/Los_Angeles"
+title = "Example Site"
+theme = "minimal"
+disableHugoGeneratorInject = true
+enableRobotsTXT = true
+
+[taxonomies]

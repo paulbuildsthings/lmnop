@@ -1,0 +1,26 @@
+To deploy a Python function:
+
+* The "function.yml" file is used to tell the build system about the your
+  app's configuration. It is required and must exist.
+* The "entrypoint" file gets copied and installed to "/entrypoint". This file
+  tells the system how to run our application. It is required and must exist.
+* Your app must have a directory called "function". This directory is copied to
+  "/home/lmnop/function" and the container will start in this directory. This
+  directory is required and must exist.
+* There is an optional file called "requirements.txt" that can contain Python
+  library requirements that will be installed with pip when the container is
+  built. It is optional.
+* There is an optional file called "initialize" that gets copied and installed
+  to "/initialize". This file is run as the lmnop user when the container is
+  built to initialize any other settings required to be in the container. It is
+  optional.
+
+To deploy this example to the demo, run these commands:
+
+    git init
+    git checkout -b main
+    git add .
+    git commit -m "initial commit"
+    git remote add lmnop http://localhost:8000/scm/example
+    git push lmnop main  # username: test, password: test
+

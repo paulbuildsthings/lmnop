@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-configuration
+  namespace: openfaas
+  labels:
+    app.kubernetes.io/name: registry-configuration
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      fields:
+        service: registry
+    storage:
+      delete:
+        enabled: true
+      cache:
+        blobdescriptor: inmemory
+      filesystem:
+        rootdirectory: /data/registry
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+    http:
+      addr: ":8080"
+      host: "http://host.docker.internal:30002"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: registry
+  namespace: openfaas
+  labels:
+    service: registry
+    app.kubernetes.io/name: registry
+spec:
+  selector:
+    matchLabels:
+      service: registry
+  template:
+    metadata:
+      labels:
+        service: registry
+        app.kubernetes.io/name: registry
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: registry
+          image: docker.io/library/registry:2.7.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: configuration
+              mountPath: /etc/docker/registry
+            - name: data
+              mountPath: /data/registry
+      volumes:
+        - name: configuration
+          configMap:
+            name: registry-configuration
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: openfaas
+spec:
+  type: NodePort
+  selector:
+    service: registry
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30002

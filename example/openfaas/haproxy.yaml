@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy-configuration
+  namespace: openfaas
+  labels:
+    app.kubernetes.io/name: haproxy-configuration
+data:
+  haproxy.cfg: |
+    global
+        log stdout format raw local0
+        log stdout format raw local1 notice
+        master-worker
+        nbthread 1
+
+    defaults
+        log global
+        mode http
+        option httplog
+        option forwardfor
+        option dontlognull
+        option contstats
+        timeout connect 5000ms
+        timeout client  12000000ms
+        timeout server  12000000ms
+        default-server init-addr libc,none
+
+    resolvers kubernetes
+        nameserver ns 10.96.0.10:53
+        resolve_retries 3
+        timeout resolve 1s
+        timeout retry   1s
+        hold other      10s
+        hold refused    10s
+        hold nx         10s
+        hold timeout    10s
+        hold valid      10s
+        hold obsolete   10s
+
+    listen openfaas
+       bind *:8080
+       mode http
+       log global
+       server openfaas gateway.openfaas.svc.cluster.local:8080 resolvers kubernetes
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: haproxy
+  namespace: openfaas
+  labels:
+    service: haproxy
+    app.kubernetes.io/name: haproxy
+spec:
+  selector:
+    matchLabels:
+      service: haproxy
+  template:
+    metadata:
+      labels:
+        service: haproxy
+        app.kubernetes.io/name: haproxy
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: haproxy
+          image: docker.io/library/haproxy:2.4.7
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: configuration
+              mountPath: /usr/local/etc/haproxy
+      volumes:
+        - name: configuration
+          configMap:
+            name: haproxy-configuration
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: haproxy
+  namespace: openfaas
+spec:
+  type: NodePort
+  selector:
+    service: haproxy
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30001
