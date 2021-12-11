@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# use like this:
+#
+#   /entrypoints/run \
+#     --chdir=src \
+#     --log-config=configurations/logging.conf \
+#     --worker-class=gevent \
+#     --bind=0.0.0.0:8080
+#
+# this will send access logs to stderr and program logs to stdout. the logging
+# configuration should be kept in the kubernetes configuration.
+
+cd /home/lmnop/app || exit 1
+
+export VIRTUALENV=/home/lmnop/app/.venv
+export PATH=/home/lmnop/app/.venv/bin:$PATH
+
+exec $VIRTUALENV/bin/gunicorn lmnop.portal.wsgi:app "$@"

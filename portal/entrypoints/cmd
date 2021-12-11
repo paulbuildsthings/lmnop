@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /home/lmnop/app || exit 1
+
+export VIRTUALENV=/home/lmnop/app/.venv
+export PATH=/home/lmnop/app/.venv/bin:$PATH
+
+exec $VIRTUALENV/bin/python3 -m lmnop "$@"

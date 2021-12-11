@@ -1,0 +1,39 @@
+{% extends "main.html" %}
+
+{% block title %}My Applications - Password{% endblock %}
+
+{% block content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <h2>Change Your Deployment Password</h2>
+  <p>
+    Before you can deploy functions with your username you must set a password.
+    This password is <em>only</em> to push functions to the My Applications
+    deployment system.
+  </p>
+  <div class="card col-xs-12 col-sm-12 col-lg-8" style="margin: 0 auto;">
+    <div class="card-body">
+      <p>
+        Enter a new password here to change your password..
+      </p>
+      <form method="POST" action="{{ url_for('password.index') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="mb-3">
+          <label for="password1" class="form-label">New Password</label>
+          <input type="password" class="form-control" id="password1" name="password1" placeholder="New Password"/>
+        </div>
+        <div class="mb-3">
+          <label for="password2" class="form-label">Confirm New Password</label>
+          <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm New Password"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Change Password</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

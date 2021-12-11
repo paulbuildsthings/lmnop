@@ -1,0 +1,247 @@
+{% extends "main.html" %}
+
+{% block title %}My Applications - Home{% endblock %}
+
+{% block head %}
+  <style>
+    .tutorial {
+      padding-left: 5rem;
+      padding-right: 5rem;
+    }
+
+    pre {
+      color: #f8f8f2;
+      background-color: #272822;
+      -moz-tab-size: 4;
+      -o-tab-size: 4;
+      tab-size: 4;
+      margin-left: 1.5rem;
+      margin-right: 1.5rem;
+      padding: 3px 2px 3px 6px;
+      border-radius: 4px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h2>What are functions?</h2>
+  <p>
+    Functions are small programs that run within a "container" and either wait
+    for a web request and respond to that request or they continually or perform
+    some action and wait for requests for the status of those actions. You can
+    make your program do anything: it can be a webhook or it can perform a
+    database query or it can serve an entire website.
+  </p>
+
+  <h2>How do I get started?</h2>
+  <p>
+    Let's start by deploying a function that responds with the environment
+    variables present in the function and the HTTP request headers. This will
+    be written using Python3.
+  </p>
+
+  <div class="tutorial">
+    <h3>Create a Git repository.</h3>
+    <p>
+      First we need to create a new Git repository to store this function. You
+      can run these commands on a terminal.
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">git init
+git checkout -b main
+git remote add lmnop {{ data.homepage_url }}/scm/example
+mkdir function</code></pre>
+    </div>
+    <br/>
+
+    <h3>Create the <code>.gitignore</code> file.</h3>
+    <p>
+      There are a few files and directories that are required to make this
+      whole thing work. Let's go about adding them all, one by one. First, we
+      will add a file called <code>.gitignore</code>. This file will tell Git
+      to not include temporary files alongside our source code. These files
+      clutter up your code and do not beling in Git. Let's put this into it:
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">.*.swp
+*~
+.DS_Store
+.DS_Store?
+.Trashes
+Thumbs.db
+__pycache__/
+*.py[cod]
+*$py.class</code></pre>
+    </div>
+    <br/>
+
+    <h3>Create the <code>entrypoint</code> file.</h3>
+    <p>
+      Now we're going to create a file called <code>entrypoint</code>. This
+      file is used by the deployment system to start your function. Any code
+      you put into this file will be executed every time your function
+      container starts. We're going to tell our function container to start
+      <code>gunicorn</code> when it starts because that is an application
+      server that works well with Python applications.
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">#!/bin/bash
+
+cd /home/lmnop/function || exit
+exec gunicorn app:app -b 127.0.0.1:5000</code></pre>
+    </div>
+    <br/>
+
+    <h3>Create the <code>requirements.txt</code> file.</h3>
+    <p>
+      Next we need to create a file called <code>requirements.txt</code>. This
+      file lists all of the Python libraries that our function needs to run. We
+      only need two libraries: <code>gunicorn</code> and <code>Flask</code> so
+      that is all we will put into this file.
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">gunicorn
+Flask</code></pre>
+    </div>
+    <br/>
+
+    <h3>Create the <code>function/app.py</code> file.</h3>
+    <p>
+      Next we need to create our actual function. This will go into a directory
+      called <code>function</code>. Remember when we initialized our Git
+      repository that we also created a directory called <code>function</code>.
+      In that directory we're going to create a file called <code>app.py</code>
+      and it is the core of our function.
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">import os
+
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+
+@app.route("/", methods=["GET", "POST"])
+def hello_world():
+    return jsonify(
+        {"headers": {k.lower(): v for (k, v) in request.headers}},
+        {"environment": dict(os.environ)},
+    )</code></pre>
+    </div>
+    <br/>
+
+    <h3>Create the <code>function.yml</code> file.</h3>
+    <p>
+      Finally, we need to create a file called <code>function.yml</code> that
+      defines how our function works. This is the last step before we actually
+      deploy the function. There is only one required field but there are other
+      options that can be used to tweak your function. We're going to lay out
+      all of the options here but remember, only <code>template</code> is
+      required.
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text"># this must match a template name. REQUIRED. (everything else is optional.)
+template: python3.10
+
+# requests are what the function is guaranteed to get. if a function requests a
+# resource then it will only run if it can be given that resource. these are
+# the defaults if nothing is specified by the configuration.
+requests:
+  cpu: 50m
+  memory: 32Mi
+
+# limits are what a function should never go above. a function just won't be
+# able to schedule more CPU than this. if the function uses more memory than
+# this it will be killed and restarted. these are the defaults if nothing is
+# specified by the configuration.
+limits:
+  cpu: 100m
+  memory: 64Mi
+
+# these are environment variables. they aren't necessary but can be useful. do
+# NOT put secret data into environment variables.
+environment:
+  foo: bar
+
+# these secrets must exist or the function will never start. secrets can be
+# created using the lmnop portal. they can be found in /var/openfaas/secrets
+# where you will see a file with the same name as the secret and the contents
+# of the file will be the actual secret data.
+#secrets:
+#  - secret-key-name
+
+# options are specific to templates. the most common "option" is a string that
+# contains a list of packages (i.e. libraries) to install. for example, you may
+# need to have "git" installed or "curl" installed or whatever because the
+# python libraries that you're using depend on these libraries in order to
+# correctly install themselves.
+#options:
+#  packages: curl</code></pre>
+    </div>
+    <br/>
+
+    <h3>Deploy your function.</h3>
+    <p>
+      After you have created all of the files above you have the minimally
+      necessary set of files to deploy a function. Let's commit these so that
+      we can push them to the deployment system. Run the following commands to
+      commit your files and deploy them. When the <code>git push</code> command
+      asks for your username and password this will be your UW NetID and the
+      <a href="{{ url_for('password.index') }}">password that you set in this
+      portal</a>.
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">git add .gitignore function.yml entrypoint function
+git commit -m "initial commit for my function"
+git push lmnop main</code></pre>
+    </div>
+
+    <p>
+      When you run the last command the deployment system takes over and builds
+      your code into a function container and deploys it. If it is successful
+      then you'll see a message telling you how to access your function. If it
+      is not successful you should see a message telling you what went wrong
+      and you can fix it, commit your fix, and push the new changes. Don't
+      forget to also push your changes back to GitHub or wherever you are
+      saving your source code! Every time you want to make a change to your
+      application you can simply make the change and push it.
+    </p>
+
+    <p>
+      You can now access your function from a web browser or a terminal at
+      either of these URLs, like this:
+    </p>
+    <div>
+      <pre><code class="language-text" data-lang="text">curl {{ data.homepage_url }}/function/example</code></pre>
+      <pre><code class="language-text" data-lang="text">curl {{ data.function_url.format("example") }}</code></pre>
+    </div>
+
+  </div>
+
+  <h2>Caveats</h2>
+  <p>
+    Now that you have a working function, there are a few caveats to this
+    system that you should be aware of.
+  </p>
+  <ul>
+    <li>
+      You must use a valid, preexisting template. Currently, there are three
+      templates that are available:
+      <ul>
+        <li>python3.9</li>
+        <li>python3.10</li>
+        <li>hugo</li>
+      </ul>
+    </li>
+    <li>
+      Your program must listen on port 5000. This is the not the default port
+      for <code>gunicorn</code> so you must specifically set the port number.
+    </li>
+    <li>
+      The filesystem in your function container is <i>read-only</i>. There is
+      writable scratch space available at <code>/tmp</code>.
+    </li>
+  </ul>
+{% endblock %}

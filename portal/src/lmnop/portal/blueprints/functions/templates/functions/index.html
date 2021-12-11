@@ -1,0 +1,219 @@
+{% extends "main.html" %}
+
+{% block title %}My Applications - Functions{% endblock %}
+
+{% block content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <h2>Functions</h2>
+  <div class="clearfix">
+    <div class="float-start">
+      <p>
+        These are all the functions currently deployed and running. You can use
+        this form to scale and delete existing functions. To create or update
+        an existing function you should use the Git-based deployment system.
+      </p>
+    </div>
+    <div class="float-end">
+    </div>
+  </div>
+
+  <table
+      class="table"
+      data-classes="table table-bordered table-hover"
+      data-toggle="table"
+      data-search="true"
+      data-search-on-enter-key="true"
+      data-icons-prefix="bi"
+      data-icons="icons">
+    <thead style="background-color: lightgray;">
+      <tr>
+        <th>Name</th>
+        <th>Replicas</th>
+        <th>Image</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if data.functions|length %}
+        {% for function in data.functions %}
+          <tr>
+            <td class="col-4 align-top">
+              <div class="text-nowrap clearfix">
+                <div class="float-start">
+                  {{ function.name }}
+                  <ul class="mb-0">
+                      {% for function_url in function.urls %}
+                        <li><a href="{{ function_url }}" target="_blank">{{ function_url }}</a></li>
+                      {% endfor %}
+                  </ul>
+                </div>
+                <div class="float-end">
+                  {% if function.marked_for_delete %}
+                    <i class="bi bi-x-circle-fill text-danger" aria-label="Marked for delete."></i>
+                  {% else %}
+                    <button type="button" class="btn btn-secondary btn-sm action-change-replica-count" title="Change replica count." data-name="{{ function.name }}" data-replicas="{{ function.replicas }}">
+                      <i class="bi bi-arrow-down-up" aria-label="Change replica count."></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm action-delete" title="Delete this function." data-name="{{ function.name }}">
+                      <i class="bi bi-x-circle-fill" aria-label="Delete this function."></i>
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+            <td class="col-1 align-top">
+              <div class="text-nowrap">
+                {{ function.replicas }}
+              </div>
+            </td>
+            <td class="col-7 align-top">
+              <div class="text-nowrap">
+                {{ function.image }}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="3" class="text-center">There are no functions deployed at this time.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+{% endblock %}
+
+{% block footer %}
+  <script>
+      function message(title, body, clazz, buttons=[]) {
+          if (!buttons.length) {
+              buttons = ["<button type='button' class='btn btn-primary' data-bs-dismiss='modal'>Close</button>"]
+          }
+
+          let html = [
+              "<div id='dialog' class='modal' tabindex='-1' role='dialog'>",
+                  "<div class='modal-dialog' role='document'>",
+                      "<div class='modal-content'>",
+                          "<div class='modal-header " + clazz + "'>",
+                              "<h5 class='modal-title'>" + title + "</h5>",
+                              "<button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>",
+                          "</div>",
+                          "<div class='modal-body'>",
+                              "<p>" + body + "</p>",
+                          "</div>",
+                          "<div class='modal-footer'>",
+                              buttons.join(""),
+                          "</div>",
+                      "</div>",
+                  "</div>",
+              "</div>",
+          ].join("");
+          $("#dialog").remove();
+          $("body").append(html);
+      }
+
+      function post(params) {
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = {{ url_for("functions.index")|tojson }};
+
+          for (const key in params) {
+              if (params.hasOwnProperty(key)) {
+                  const hiddenField = document.createElement("input");
+                  hiddenField.type = "hidden";
+                  hiddenField.name = key;
+                  hiddenField.value = params[key];
+                  form.appendChild(hiddenField);
+              }
+          }
+
+          const hiddenField = document.createElement("input");
+          hiddenField.type = "hidden";
+          hiddenField.name = "csrf_token";
+          hiddenField.value = {{ csrf_token()|tojson }};
+          form.appendChild(hiddenField);
+
+          document.body.appendChild(form);
+          form.submit();
+      }
+
+      $("table.table").on("post-body.bs.table", function () {
+          $("button.action-change-replica-count").on("click", function (e) {
+              let button = $(e.currentTarget),
+                  name = button.data("name"),
+                  replicas = button.data("replicas");
+
+              message(
+                  "Replica Count",
+                  [
+                      "<div class='alert alert-danger' role='alert'></div>",
+                      "<form>",
+                        "<p>How many replicas would you like to start for '" + name + "'?</p>",
+                        "<input type='text' required='required' class='form-control' name='replicas' value='" + replicas + "'><br/>",
+                      "</form>",
+                  ].join(""),
+                  "alert-dark",
+                  [
+                      "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel</button>",
+                      "<button type='button' class='btn btn-primary' data-action='save'>Save</button>",
+                  ]
+              );
+
+              $("#dialog button[data-action='save']").on("click", function () {
+                  let replica_count = $("#dialog form input[name='replicas']").val();
+
+                  replica_count = parseInt(replica_count);
+                  if (isNaN(replica_count)) {
+                      $("#dialog div[role='alert']").show().text("The replica count you provided is invalid.");
+                      $("#dialog form input[name='replicas']").focus();
+                      return;
+                  }
+                  if (replica_count < 0) {
+                      $("#dialog div[role='alert']").show().text("You may not have a negative number of replicas.");
+                      $("#dialog form input[name='replicas']").focus();
+                      return;
+                  }
+                  if (replica_count > 5) {
+                      $("#dialog div[role='alert']").show().text("You may not have more than five replicas.");
+                      $("#dialog form input[name='replicas']").focus();
+                      return;
+                  }
+
+                  post({"action": "replicas", "name": name, "replicas": replica_count});
+              });
+
+              $("#dialog div[role='alert']").hide();
+              $("#dialog").on("shown.bs.modal", function () {
+                  $("#dialog form input[name='replicas']").focus();
+              });
+              $("#dialog").modal("show");
+          });
+
+          $("button.action-delete").on("click", function (e) {
+              let button = $(e.currentTarget),
+                  name = button.data("name");
+
+              message(
+                  "Delete Function",
+                  [
+                      "<p>Are you sure that you'd like to delete the function named '" + name + "'?</p>",
+                  ].join(""),
+                  "alert-dark",
+                  [
+                      "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel</button>",
+                      "<button type='button' class='btn btn-primary' data-action='delete'>Delete</button>",
+                  ]
+              );
+
+              $("#dialog button[data-action='delete']").on("click", function () {
+                  post({"action": "delete", "name": name});
+              });
+
+              $("#dialog").modal("show");
+          });
+      });
+  </script>
+{% endblock %}
