@@ -1,6 +1,12 @@
+# lmnop - the tool for deploying functions
+
+lmnop, pronounced "limb-nop", is a tool for deploying functions using a Heroku-like git-push interface. lmnop uses
+[OpenFaaS](https://www.openfaas.com/) to manage deployments. You choose a template, you build some code to match the
+template, and then you git-push it to lmnop and it will either deploy a new function or replace an existing function.
+
 # lmnop example
 
-This example directory will get your entire `lmnop` system running with a few easy steps. Just follow along!
+This example directory will get your entire `lmnop` system running on your local system with a few easy steps.
 
 ## Prerequisites
 
