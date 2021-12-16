@@ -14,7 +14,7 @@ services:
     environment:
       - LMNOP_DEPLOY_BRANCH=main
       - LMNOP_HOMEPAGE_URL=http://localhost:8000
-      - LMNOP_FUNCTION_URL=http://localhost:8000/function/{
+      - LMNOP_FUNCTION_URL=http://localhost:8000/function/[]
       - LMNOP_GATEWAY=http://host.docker.internal:30001
       - LMNOP_REGISTRY=host.docker.internal:30002/lmnop
       - LMNOP_DATABASE_HOST=db
@@ -59,7 +59,7 @@ services:
       - 8080:8080/tcp
     environment:
       - LMNOP_HOMEPAGE_URL=http://localhost:8000
-      - LMNOP_FUNCTION_URL=http://localhost:8000/function/{}
+      - LMNOP_FUNCTION_URL=http://localhost:8000/function/[]
       - LMNOP_GATEWAY=http://host.docker.internal:30001
       - LMNOP_DATABASE_HOST=db
       - LMNOP_DATABASE_PORT=5432

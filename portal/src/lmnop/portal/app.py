@@ -19,6 +19,9 @@ def load():
     environment = lmnop.portal.tools.load_configuration(app, "configurations")
     app.logger.info("starting web application in '{}' mode with version {}".format(environment, __version__))
 
+    # fix braces and brackets in configuration
+    app.config["LMNOP_FUNCTION_URL"] = app.config["LMNOP_FUNCTION_URL"].replace("[", "{").replace("]", "}")
+
     # load the secret key so that sessions work
     lmnop.portal.tools.set_secret_key(app)
 

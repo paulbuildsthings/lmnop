@@ -18,7 +18,7 @@ from builder.database import conn as db
 # we will only deploy to this branch
 LMNOP_DEPLOY_BRANCH = os.environ.get("LMNOP_DEPLOY_BRANCH", "main")
 LMNOP_HOMEPAGE_URL = os.environ.get("LMNOP_HOMEPAGE_URL", "http://localhost:30001")
-LMNOP_FUNCTION_URL = os.environ.get("LMNOP_FUNCTION_URL", "http://localhost:30001/function/{}")
+LMNOP_FUNCTION_URL = os.environ.get("LMNOP_FUNCTION_URL", "http://localhost:30001/function/[]").replace("[", "{").replace("]", "}")
 LMNOP_GATEWAY = os.environ.get("LMNOP_GATEWAY", "http://host.docker.internal:30001")
 LMNOP_REGISTRY = os.environ.get("LMNOP_REGISTRY", "host.docker.internal:30002/lmnop")
 
