@@ -1,4 +1,4 @@
-FROM python:3.9.9-slim-bullseye@sha256:d67e4b3e185208a010e0d06dd1f655292dd92c5dd08a64b1c59a0acbd387b1e9 AS base
+FROM python:3.9.9-slim-bullseye@sha256:f4efbe5d1eb52c221fded79ddf18e4baa0606e7766afe2f07b0b330a9e79564a AS base
 
 # install updates and dependencies
 ENV DEBIAN_FRONTEND=noninteractive

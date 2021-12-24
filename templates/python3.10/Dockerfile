@@ -1,5 +1,5 @@
-FROM ghcr.io/openfaas/of-watchdog:0.9.2@sha256:53930578070cf81faa309294a9215b8b850c313ac51f1b885454e8a74234780e as watchdog
-FROM python:3.10.1-slim-bullseye@sha256:b4dbc0d7965d78d239b13b7b740922fb25881e5ac75c8ef2122df280934ad5f8 AS base
+FROM ghcr.io/openfaas/of-watchdog:0.9.2@sha256:53930578070cf81faa309294a9215b8b850c313ac51f1b885454e8a74234780e AS watchdog
+FROM python:3.10.1-slim-bullseye@sha256:dd3016f846b8f88d8f6c28b43f1da899f07259121aff403091e6f89a703c3d36 AS base
 
 # Allows you to add additional packages via build-arg
 ARG packages
