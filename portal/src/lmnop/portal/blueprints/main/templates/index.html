@@ -236,8 +236,9 @@ git push lmnop main</code></pre>
       </ul>
     </li>
     <li>
-      Your program must listen on port 5000. This is the not the default port
-      for <code>gunicorn</code> so you must specifically set the port number.
+      If your template requires a program then your program must listen on port
+      5000. This is not the default port for <code>gunicorn</code> so you must
+      specifically set the port number.
     </li>
     <li>
       The filesystem in your function container is <i>read-only</i>. There is
