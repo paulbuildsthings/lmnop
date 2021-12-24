@@ -30,7 +30,7 @@ RUN apt-get -q update \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # download hugo
-ENV HUGO_VERSION="0.89.4"
+ENV HUGO_VERSION="0.91.2"
 ENV HUGO_RELEASE_NAME=hugo_${HUGO_VERSION}_Linux-64bit.deb
 ENV HUGO_RELEASE_URL=https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_RELEASE_NAME}
 RUN wget $HUGO_RELEASE_URL && dpkg -i $HUGO_RELEASE_NAME
