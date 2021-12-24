@@ -12,30 +12,31 @@ RUN apt-get -q update && apt-get -y upgrade \
 COPY --from=watchdog /fwatchdog /usr/bin/fwatchdog
 RUN chmod +x /usr/bin/fwatchdog
 
-FROM base AS builder
+FROM node:lts-bullseye-slim@sha256:b0a27877c45f2d31d54a6197bcca1bbd1e307a557b1f655c8fbe80170567ca3e AS builder
 
-RUN apt-get -q update \
- && apt-get install -y --no-install-recommends wget ca-certificates \
+# install updates and dependencies
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get -q update && apt-get -y upgrade \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# download hugo
-ENV HUGO_VERSION="0.91.2"
-ENV HUGO_RELEASE_NAME=hugo_${HUGO_VERSION}_Linux-64bit.deb
-ENV HUGO_RELEASE_URL=https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${HUGO_RELEASE_NAME}
-RUN wget $HUGO_RELEASE_URL && dpkg -i $HUGO_RELEASE_NAME
+# copy over the dependency files
+COPY function/package.json /usr/local/src
+COPY function/package-lock.json /usr/local/src
+
+# install dependencies
+WORKDIR /usr/local/src
+RUN npm install
 
 # copy everything over to this builder container
 # the user's stuff ends up in /usr/local/src/function
 COPY . /usr/local/src
-
-# build the hugo site
-WORKDIR /usr/local/src/function/site
-RUN rm -rf ./public ./resources/_gen && hugo
+WORKDIR /usr/local/src/function
+RUN npm run build
 
 FROM base AS final
 
 # copy things from the builder and the template that are needed
-COPY --chown=0:0 --from=builder /usr/local/src/function/site/public /var/www/html
+COPY --chown=0:0 --from=builder /usr/local/src/function/build /var/www/html
 COPY --chown=0:0 --from=builder /usr/local/src/lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY --chown=0:0 --from=builder /usr/local/src/entrypoint /entrypoint
 RUN chmod +x /entrypoint
