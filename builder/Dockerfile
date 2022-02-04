@@ -1,8 +1,8 @@
 # we need to pull the faas-cli out of this container
-FROM ghcr.io/openfaas/faas-cli:0.14.1@sha256:fbb3cae149a378cdbff225cf4942337671376ae0c58be7797a48a9a3090319d0 AS faas
+FROM ghcr.io/openfaas/faas-cli:0.14.2@sha256:cd71b6e0c7464131643b92ae0a273f30ed8454a35e70a57720eb3e40aea58aee AS faas
 
 # but our actual container runs inside this python container
-FROM python:3.9.10-slim-bullseye@sha256:a9cf2d58b33ba6f273e80d1f6272186d8930c062fa2a2abc65f35bdf4609a032 AS base
+FROM python:3.9.10-slim-bullseye@sha256:86b3b6af2b6254fe44de9f5c8e6e08248cdef19f3060ee5cf131ef629c375830 AS base
 
 # create the user (do not use yet)
 RUN groupadd -g 1000 lmnop && useradd -u 1000 -g 1000 -d /home/lmnop --create-home lmnop
